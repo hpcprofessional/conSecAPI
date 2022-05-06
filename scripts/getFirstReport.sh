@@ -4,6 +4,7 @@
 #  *  This script assumes your Tenable Access and Secret Keys are stored in uncreatively named environment variables:
 #     TENABLE_ACCESS_KEY
 #     TENABLE_SECRET_KEY
+#     See also: https://docs.tenable.com/tenableio/Content/Settings/GenerateAPIKey.htm
 #  *  This script depends on the following 3rd party package(s):
 #     jq - https://stedolan.github.io/jq/
 #
