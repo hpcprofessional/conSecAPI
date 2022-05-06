@@ -1,4 +1,5 @@
 #See also: https://docs.tenable.com/tenableio/Content/ContainerSecurity/CSScanner_ImageInspect.htm
+#          https://docs.tenable.com/tenableio/Content/Settings/GenerateAPIKey.htm
 
 #NOTES: 
 #  *  This script assumes relevant Docker arguments are stored in uncreatively named environment variables:
