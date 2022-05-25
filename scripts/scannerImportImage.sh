@@ -7,9 +7,21 @@
 #     TENABLE_SECRET_KEY
 #     IMPORT_REPO_NAME
 
+#Note: A relevant policy needs to be configured for this setting to be useful.
+CHECK_POLICY=true
+
 #Here is an example docker image that should allow a quick and easy test of importing
-IMPORT_REPO_NAME="docker.io/hpcprofessional/accurics"
-IMAGE_NAME="hpcprofessional:1.0.18beta1"
+#IMPORT_REPO_NAME="docker.io/hpcprofessional/accurics:latest"
+IMPORT_REPO_NAME="my_tcs_repo"
+
+#          ===  Images to consider importing ===
+#
+#An Older Node.js base image. Has one outdated node.js library
+#IMAGE_NAME="library/node:14.19-alpine"
+#
+#An intentionally insecure docker file. Over 700 vulnerabilities
+#https://github.com/ianmiell/bad-dockerfile
+IMAGE_NAME="imiell/bad-dockerfile"
 
 #You'll need to authenticate to the Tenable Container Security Docker Image Repository using special credentails
 #How to get the credentials are described here: https://docs.tenable.com/tenableio/Content/ContainerSecurity/DownloadCSScanner.htm
@@ -22,9 +34,11 @@ docker login tenableio-docker-consec-local.jfrog.io
 
 #Pulling the repo first can avoid certain edge cases including high network latency
 #(Also confirms our registry credentials work)
-docker pull $IMPORT_REPO_NAME
+docker pull $IMAGE_NAME
 
-docker save $IMPORT_REPO_NAME | docker run \
+echo "docker save $IMAGE_NAME | docker run -e TENABLE_ACCESS_KEY=\"$TENABLE_ACCESS_KEY\" -e TENABLE_SECRET_KEY=\"$TENABLE_SECRET_KEY\" -e IMPORT_REPO_NAME=\"$IMPORT_REPO_NAME\" -i tenableio-docker-consec-local.jfrog.io/cs-scanner:latest inspect-image $IMAGE_NAME"
+
+docker save $IMAGE_NAME | docker run \
 -e TENABLE_ACCESS_KEY="$TENABLE_ACCESS_KEY" \
 -e TENABLE_SECRET_KEY="$TENABLE_SECRET_KEY" \
 -e IMPORT_REPO_NAME="$IMPORT_REPO_NAME" \
