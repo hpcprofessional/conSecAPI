@@ -61,7 +61,8 @@ fi
 #(Also confirms our registry credentials work)
 docker pull $IMAGE_NAME
 
-echo "docker save $IMAGE_NAME | docker run -e TENABLE_ACCESS_KEY=\"$TENABLE_ACCESS_KEY\" -e TENABLE_SECRET_KEY=\"$TENABLE_SECRET_KEY\" -e IMPORT_REPO_NAME=\"$IMPORT_REPO_NAME\" -i tenableio-docker-consec-local.jfrog.io/cs-scanner:latest inspect-image $IMAGE_NAME"
+#This may be useful for troubleshooting, but shouldn't be enabled by default 
+#echo "docker save $IMAGE_NAME | docker run -e TENABLE_ACCESS_KEY=\"$TENABLE_ACCESS_KEY\" -e TENABLE_SECRET_KEY=\"$TENABLE_SECRET_KEY\" -e IMPORT_REPO_NAME=\"$IMPORT_REPO_NAME\" -i tenableio-docker-consec-local.jfrog.io/cs-scanner:latest inspect-image $IMAGE_NAME"
 
 docker save $IMAGE_NAME | docker run \
 -e TENABLE_ACCESS_KEY="$TENABLE_ACCESS_KEY" \
