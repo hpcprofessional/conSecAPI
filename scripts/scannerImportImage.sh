@@ -5,32 +5,57 @@
 #  *  This script assumes relevant Docker arguments are stored in uncreatively named environment variables:
 #     TENABLE_ACCESS_KEY
 #     TENABLE_SECRET_KEY
-#     IMPORT_REPO_NAME
-
-#Note: A relevant policy needs to be configured for this setting to be useful.
-CHECK_POLICY=true
-
-#Here is an example docker image that should allow a quick and easy test of importing
-#IMPORT_REPO_NAME="docker.io/hpcprofessional/accurics:latest"
-IMPORT_REPO_NAME="my_tcs_repo"
 
 #          ===  Images to consider importing ===
 #
-#An Older Node.js base image. Has one outdated node.js library
+#An Older Node.js base image. Has a small number (1?) outdated node.js librar[y | ies]
 #IMAGE_NAME="library/node:14.19-alpine"
 #
-#An intentionally insecure docker file. Over 700 vulnerabilities
+#An intentionally insecure docker file. Over 700 vulnerabilities at last count
 #https://github.com/ianmiell/bad-dockerfile
 IMAGE_NAME="imiell/bad-dockerfile"
 
-#You'll need to authenticate to the Tenable Container Security Docker Image Repository using special credentails
-#How to get the credentials are described here: https://docs.tenable.com/tenableio/Content/ContainerSecurity/DownloadCSScanner.htm
-#Note that these are not:
-# Your Tenable.io login
-# The API Access/Secret Key
-# (So don't use any of the above)
-echo "Please provde Container Security Registry Authentication Credentials:"
-docker login tenableio-docker-consec-local.jfrog.io
+#REPO name provides folder-like organization to your images inside Tenable.cs
+IMPORT_REPO_NAME="my_tcs_repo"
+
+CHECK_POLICY=1
+#0: No special output or exit code on violations
+#1: This will check policy and simulate a CI/CD use case. 
+#Note that for this to work, you need an appropriate policy configured: 
+#    https://cloud.tenable.com/tio/app.html#/container-security/dashboard/policies
+
+#          === Double Check a few things ===
+EXIT=0
+if [ -z "$TENABLE_ACCESS_KEY" ]; then
+  echo "The TENABLE_ACCESS_KEY environment variable is not set."
+  echo "It can be set as an exported environment variable (recommended) or hard coded in this script (not recommended)"
+  echo "The value is specific to your Tenable.io credential. More information is here:"
+  echo "   https://docs.tenable.com/tenableio/Content/Settings/GenerateAPIKey.htm"
+  EXIT=1
+fi
+
+if [ -z "$TENABLE_SECRET_KEY" ]; then
+  echo "The TENABLE_SECRET_KEY environment variable is not set."
+  echo "It can be set as an exported environment variable (recommended) or hard coded in this script (not recommended)"
+  echo "The value is specific to your Tenable.io credential. More information is here:"
+  echo "   https://docs.tenable.com/tenableio/Content/Settings/GenerateAPIKey.htm"
+  EXIT=1
+fi
+
+CS_SCANNER=$(docker image list | fgrep 'tenableio-docker-consec-local.jfrog.io/cs-scanner')
+if [ -z "$CS_SCANNER" ]; then
+  echo "The Tenable Container Security doesn't appear to be in Docker."
+  echo "You'll need to authenticate to the Tenable Container Security Docker Image Repository using special credentails"
+  echo "Please complete the steps described here before continuing:"
+  echo "   https://docs.tenable.com/tenableio/Content/ContainerSecurity/DownloadCSScanner.htm"
+fi
+
+if [[ $EXIT -ne 0 ]]; then
+  echo "Fatal errors detected"
+  exit $EXIT
+fi
+
+
 
 #Pulling the repo first can avoid certain edge cases including high network latency
 #(Also confirms our registry credentials work)
@@ -42,4 +67,9 @@ docker save $IMAGE_NAME | docker run \
 -e TENABLE_ACCESS_KEY="$TENABLE_ACCESS_KEY" \
 -e TENABLE_SECRET_KEY="$TENABLE_SECRET_KEY" \
 -e IMPORT_REPO_NAME="$IMPORT_REPO_NAME" \
+-e CHECK_POLICY="$CHECK_POLICY" \
 -i tenableio-docker-consec-local.jfrog.io/cs-scanner:latest inspect-image $IMAGE_NAME
+
+TCS_EXIT_CODE=$?
+
+echo "The Container Security Scan had an exit code of: $TCS_EXIT_CODE"
