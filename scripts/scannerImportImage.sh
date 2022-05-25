@@ -42,7 +42,7 @@ if [ -z "$TENABLE_SECRET_KEY" ]; then
   EXIT=1
 fi
 
-CS_SCANNER=$(docker image list | fgrep 'tenableio-docker-consec-local.jfrog.io/cs-scanner')
+CS_SCANNER=$(docker image list | grep -F 'tenableio-docker-consec-local.jfrog.io/cs-scanner')
 if [ -z "$CS_SCANNER" ]; then
   echo "The Tenable Container Security doesn't appear to be in Docker."
   echo "You'll need to authenticate to the Tenable Container Security Docker Image Repository using special credentails"
@@ -50,12 +50,10 @@ if [ -z "$CS_SCANNER" ]; then
   echo "   https://docs.tenable.com/tenableio/Content/ContainerSecurity/DownloadCSScanner.htm"
 fi
 
-if [[ $EXIT -ne 0 ]]; then
+if [ $EXIT -ne 0 ]; then
   echo "Fatal errors detected"
   exit $EXIT
 fi
-
-
 
 #Pulling the repo first can avoid certain edge cases including high network latency
 #(Also confirms our registry credentials work)
